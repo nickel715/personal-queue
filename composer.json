@@ -1,0 +1,25 @@
+{
+    "name": "nickel715/personal-queue",
+    "description": "",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nicolas Hohm",
+            "email": "nickel7152@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.4.*",
+        "satooshi/php-coveralls": "0.6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PersonalQueue\\": "src/"
+        }
+    }
+}
