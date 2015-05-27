@@ -1,0 +1,42 @@
+FORMAT: 1A
+
+# Personal queue
+
+## Show jobs [/job]
+
+### Peek ready job [GET]
+
++ Response 200 (plain/text)
+
+        Job text
+
+## Create jobs [/job{?delay,priority}]
+
+### Put job [POST]
+
++ Parameters
+    + delay (number, optional) - Delay
+    + priority (number, optional) - Priority
+    
++ Request (plain/text)
+
+        Job text
+
++ Response 201 (plain/text)
+
+
+## Finish jobs [/job/{job_id}]
+
+### Finish job [DELETE]
+
++ Response 200
+
+## Reschedule jobs [/reschedule/{job_id}{?delay,priority}]
+
+## Reschedule job [POST]
+
++ Parameters
+    + delay (number, optional) - Delay
+    + priority (number, optional) - Priority
+    
++ Response 200
