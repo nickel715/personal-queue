@@ -27,7 +27,7 @@
     <div class="jumbotron">
         <h2>Your Job <small id="count">(<?= $count ?>)</small></h2>
         <blockquote>
-            <p id="job"><?= $job->getData() ?></p>
+            <p id="job" data-id="<?= $job->getId() ?>"><?= $job->getData() ?></p>
         </blockquote>
         <button class="btn btn-success" id="done">Done</button>
         <button class="btn btn-warning" id="reschedule">Reschedule</button>
@@ -50,6 +50,7 @@
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
+
     $(document).ready(function() {
 
         // https://github.com/bryanwoods/autolink-js/
@@ -57,33 +58,35 @@
         a+"'"+f+">"+a+"</a>";return""+b+c})}}).call(this);
 
         var $job = $('#job');
+
         $($job).html(
             $job.html().autoLink({ target: "_blank" })
         );
 
         $('#done').click(function() {
             $.ajax({
-                url: '<?= $_SERVER['PHP_SELF'] ?>',
+                url: '<?= $_SERVER['REQUEST_URI'] ?>job/' + $job.data('id'),
                 type: 'delete',
-                data: $('#new').val(),
                 success: function() {
-                    $('#new').val('');
+                    window.location.reload();
                 }
             });
         });
 
         $('#reschedule').click(function() {
-            $.get('<?= $_SERVER['PHP_SELF'] ?>', {
-                'd': $('#job').html()
-            }, function() {
-                window.location.reload();
+            $.ajax({
+                url: '<?= $_SERVER['REQUEST_URI'] ?>reschedule/' + $job.data('id'),
+                type: 'post',
+                success: function() {
+                    window.location.reload();
+                }
             });
         });
 
         $('#add').submit(function(e) {
             $.ajax({
-                url: '<?= $_SERVER['PHP_SELF'] ?>',
-                type: 'PUT',
+                url: '<?= $_SERVER['REQUEST_URI'] ?>job',
+                type: 'post',
                 data: $('#new').val(),
                 success: function() {
                     $('#new').val('');
