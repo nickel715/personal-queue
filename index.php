@@ -5,6 +5,7 @@
     use Monolog\Handler\StreamHandler;
     use Monolog\Logger;
     use PersonalQueue\JobDealer;
+    use Pheanstalk\Job;
     use Pheanstalk\Pheanstalk;
     use Pheanstalk\PheanstalkInterface;
 
@@ -41,38 +42,71 @@
         }
     }
 
-    echo $app
-        ->get('/job', function(µ $app, array $params) {
-            /** @var JobDealer $jobDealer */
-            $jobDealer = $app->cfg('job-dealer');
-            return $jobDealer->peek()->getData();
-        })
-        ->post('/job', function(µ $app, array $params) {
-            /** @var JobDealer $jobDealer */
-            $jobDealer = $app->cfg('job-dealer');
-            $jobDealer->add(
-                file_get_contents("php://input"),
-                (!empty($_GET['priority'])) ? $_GET['priority'] : PheanstalkInterface::DEFAULT_PRIORITY,
-                (!empty($_GET['delay']))    ? $_GET['delay']    : PheanstalkInterface::DEFAULT_DELAY
-            );
-            http_response_code(201);
-        })
-        ->delete('/job/(?<id>\d+)', function(µ $app, array $params) {
-            /** @var JobDealer $jobDealer */
-            $jobDealer = $app->cfg('job-dealer');
-            $jobDealer->done($params['id']);
-        })
-        ->any('/reschedule/(?<id>\d+)', function(µ $app, array $params) {
-            /** @var JobDealer $jobDealer */
-            $jobDealer = $app->cfg('job-dealer');
-            $jobDealer->reschedule($params['id']);
-        })
-        ->get('/', function(µ $app, array $params) {
-            /** @var JobDealer $jobDealer */
-            $jobDealer = $app->cfg('job-dealer');
-            return $app->view('index', [
-                'job'   => $jobDealer->peek(),
-                'count' => $jobDealer->count(),
-            ]);
-        })
-        ->run();
+    try {
+
+        echo $app
+            ->get(
+                '/job',
+                function (µ $app, array $params) {
+                    /** @var JobDealer $jobDealer */
+                    $jobDealer = $app->cfg('job-dealer');
+
+                    return $jobDealer->peek()->getData();
+                }
+            )
+            ->post(
+                '/job',
+                function (µ $app, array $params) {
+                    /** @var JobDealer $jobDealer */
+                    $jobDealer = $app->cfg('job-dealer');
+                    $jobDealer->add(
+                        file_get_contents("php://input"),
+                        (!empty($_GET['priority'])) ? $_GET['priority'] : PheanstalkInterface::DEFAULT_PRIORITY,
+                        (!empty($_GET['delay'])) ? $_GET['delay'] : PheanstalkInterface::DEFAULT_DELAY
+                    );
+                    http_response_code(201);
+                }
+            )
+            ->delete(
+                '/job/(?<id>\d+)',
+                function (µ $app, array $params) {
+                    /** @var JobDealer $jobDealer */
+                    $jobDealer = $app->cfg('job-dealer');
+                    $jobDealer->done($params['id']);
+                }
+            )
+            ->any(
+                '/reschedule/(?<id>\d+)',
+                function (µ $app, array $params) {
+                    /** @var JobDealer $jobDealer */
+                    $jobDealer = $app->cfg('job-dealer');
+                    $jobDealer->reschedule($params['id']);
+                }
+            )
+            ->get(
+                '/',
+                function (µ $app, array $params) {
+                    /** @var JobDealer $jobDealer */
+                    $jobDealer = $app->cfg('job-dealer');
+
+                    try {
+                        $d = [
+                            'job'   => $jobDealer->peek(),
+                            'count' => $jobDealer->count(),
+                        ];
+                    } catch(Exception $e) {
+                        $d = ['job' => new Job(0, ''), 'count' => 0];
+                    }
+
+                    return $app->view(
+                        'index',
+                        $d
+                    );
+                }
+            )
+            ->run();
+
+    } catch (Exception $e) {
+        $app->cfg('log')->error($e->getMessage(), array('exception' => $e));
+        http_response_code(500);
+    }
