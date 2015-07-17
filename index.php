@@ -86,7 +86,12 @@
                 function (µ $app, array $params) {
                     /** @var JobDealer $jobDealer */
                     $jobDealer = $app->cfg('job-dealer');
-                    $jobDealer->reschedule($params['id']);
+                    $getParams = $app->cfg('getParams');
+                    $jobDealer->reschedule(
+                        $params['id'],
+                        (!empty($getParams['priority'])) ? $getParams['priority'] : PheanstalkInterface::DEFAULT_PRIORITY,
+                        (!empty($getParams['delay'])) ? $getParams['delay'] : PheanstalkInterface::DEFAULT_DELAY
+                    );
                 }
             )
             ->get(

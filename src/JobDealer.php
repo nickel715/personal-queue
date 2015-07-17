@@ -76,6 +76,8 @@
          * Add Job
          *
          * @param string $text
+         * @param int $priority
+         * @param int $delay
          */
         public function add($text, $priority = Pheanstalk::DEFAULT_PRIORITY, $delay = Pheanstalk::DEFAULT_DELAY) {
             $this->pheanstalk->useTube($this->tube);
@@ -101,20 +103,29 @@
             );
         }
 
-        public function reschedule($jobId) {
+        /**
+         * Delete given job and create new job with old or passed params
+         *
+         * @param int $jobId
+         * @param int $priority
+         * @param int $delay
+         */
+        public function reschedule($jobId, $priority = NULL, $delay = NULL) {
             /** @var Job $job */
             $job = $this->pheanstalk->peek($jobId);
             $jobStats = $this->pheanstalk->statsJob($job);
             $this->pheanstalk->useTube($this->tube);
-            $newJobId = $this->pheanstalk->put($job->getData(), $jobStats['pri'], $jobStats['delay'], $jobStats['ttr']);
+            $priority = (NULL === $priority) ? $jobStats['pri'] : $priority;
+            $delay    = (NULL === $delay) ? $jobStats['delay'] : $delay;
+            $newJobId = $this->pheanstalk->put($job->getData(), $priority, $delay, $jobStats['ttr']);
             $this->pheanstalk->delete($job);
 
             $context = [
                 'job_id'     => $newJobId,
                 'old_job_id' => $jobId,
                 'text'       => $job->getData(),
-                'priority'   => $jobStats['pri'],
-                'delay'      => $jobStats['delay'],
+                'priority'   => $priority,
+                'delay'      => $delay,
             ];
             $this->logger->info(sprintf('Reschedule job (%d => %d): %s', $jobId, $newJobId, $job->getData()), $context);
         }
