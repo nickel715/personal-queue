@@ -111,7 +111,7 @@
 
                     return $app->view(
                         'index',
-                        $d
+                        array_merge(['app' => $app], $d)
                     );
                 }
             )

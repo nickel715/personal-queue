@@ -20,6 +20,15 @@
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
 </head>
 <body>
 
@@ -29,25 +38,20 @@
         <blockquote>
             <p id="job" data-id="<?= $job->getId() ?>"><?= $job->getData() ?></p>
         </blockquote>
-        <button class="btn btn-success" id="done">Done</button>
+        <?= $app->view('delay') ?>
         <button class="btn btn-warning" id="reschedule">Reschedule</button>
+        <button class="btn btn-success" id="done">Done</button>
     </div>
     <div class="jumbotron">
         <form id="add">
             <div class="form-group">
                 <input type="text" class="form-control" id="new" placeholder="todo..." />
             </div>
+            <?= $app->view('delay') ?>
             <button type="submit" class="btn btn-default">Add</button>
         </form>
     </div>
 </div>
-
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
 
@@ -75,7 +79,7 @@
 
         $('#reschedule').click(function() {
             $.ajax({
-                url: '<?= $_SERVER['REQUEST_URI'] ?>reschedule/' + $job.data('id'),
+                url: '<?= $_SERVER['REQUEST_URI'] ?>reschedule/' + $job.data('id') + '?delay=' + $(this).parent().find('input[name=delay]').val(),
                 type: 'post',
                 success: function() {
                     window.location.reload();
@@ -85,7 +89,7 @@
 
         $('#add').submit(function(e) {
             $.ajax({
-                url: '<?= $_SERVER['REQUEST_URI'] ?>job',
+                url: '<?= $_SERVER['REQUEST_URI'] ?>job?delay=' + $(this).parent().find('input[name=delay]').val(),
                 type: 'post',
                 data: $('#new').val(),
                 success: function() {
