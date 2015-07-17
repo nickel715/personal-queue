@@ -33,6 +33,11 @@
                 ->setPheanstalk($app->cfg('pheanstalk'))
                 ->setTube($app->cfg('tube'));
         })
+        ->cfg('getParams', function(µ $app) {
+            $query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+            parse_str($query, $getParams);
+            return $getParams;
+        })
     ;
 
     if (file_exists('config.php')) {
@@ -59,10 +64,11 @@
                 function (µ $app, array $params) {
                     /** @var JobDealer $jobDealer */
                     $jobDealer = $app->cfg('job-dealer');
+                    $getParams = $app->cfg('getParams');
                     $jobDealer->add(
                         file_get_contents("php://input"),
-                        (!empty($_GET['priority'])) ? $_GET['priority'] : PheanstalkInterface::DEFAULT_PRIORITY,
-                        (!empty($_GET['delay'])) ? $_GET['delay'] : PheanstalkInterface::DEFAULT_DELAY
+                        (!empty($getParams['priority'])) ? $getParams['priority'] : PheanstalkInterface::DEFAULT_PRIORITY,
+                        (!empty($getParams['delay'])) ? $getParams['delay'] : PheanstalkInterface::DEFAULT_DELAY
                     );
                     http_response_code(201);
                 }
